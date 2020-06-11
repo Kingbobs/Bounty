@@ -1,0 +1,9 @@
+name: Bounty
+api: [3.0.0, 4.0.0]
+main: Infernus101\Main
+version: 2.0.0
+author: VMPE Development Team
+description: Bounty plugin for Faction servers.
+commands:
+  bounty:
+    description: "Bounty help"
