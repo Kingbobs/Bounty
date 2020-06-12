@@ -42,7 +42,7 @@ class Main extends PluginBase implements Listener{
     	public function bountyExists($playe) {
 		$result = $this->db->query("SELECT * FROM bounty WHERE player='$playe';");
 		$array = $result->fetchArray(SQLITE3_ASSOC);
-		return empty($array) == true;
+		return empty($array) == false;
 	    }
 		public function getBountyMoney($play){
         $result = $this->db->query("SELECT * FROM bounty WHERE player = '$play';");
@@ -104,13 +104,13 @@ class Main extends PluginBase implements Listener{
 		$lower = strtolower($username);
 		$bounty = $this->getBountyMoney2($lower);
 		if($this->cfg->get("bounty_stats") == 1 && $this->cfg->get("health_stats") != 1){
-		$player->setNameTag("§a$username\n§eBounty: §6$bounty".."$");
+		$player->setNameTag("§a$username\n§eBounty: §6$bounty"."$");
 		}
 		if($this->cfg->get("health_stats") == 1 && $this->cfg->get("bounty_stats") != 1){
 		$player->setNameTag("§a$username §c".$player->getHealth()."§f/§c".$player->getMaxHealth());
 		}
 		if($this->cfg->get("bounty_stats") == 1 && $this->cfg->get("health_stats") == 1){
-		$player->setNameTag("§a$username §c".$player->getHealth()."§f/§c".$player->getMaxHealth()."\n§eBounty: §6$bounty".."$");
+		$player->setNameTag("§a$username §c".$player->getHealth()."§f/§c".$player->getMaxHealth()."\n§eBounty: §6$bounty"."$");
 		}
 	    }
 		public function onDeath(PlayerDeathEvent $event) {
@@ -124,21 +124,21 @@ class Main extends PluginBase implements Listener{
 			if($player instanceof Player){
 				if($this->bountyExists($lowr)){
 					$money = $this->getBountyMoney($lowr);
-					$killer->sendMessage("§6[BOUNTY]>§b §bYou get extra §3$money §bfrom bounty for killing §3$name".."§b!");
+					$killer->sendMessage("§6[BOUNTY]>§b §bYou get extra §3$money §bfrom bounty for killing §3$name"."§b!");
 					EconomyAPI::getInstance()->addMoney($killer->getName(), $money);
 					if($this->cfg->get("bounty_broadcast") == 1){
-			          $this->getServer()->broadcastMessage("§6[BOUNTY]> §2$name2 §ajust got §2$money".."$ §abounty for killing §2$name!");
+			          $this->getServer()->broadcastMessage("§6[BOUNTY]> §2$name2 §ajust got §2$money"."$ §abounty for killing §2$name!");
 		            }
 				if($this->cfg->get("bounty_fine") == 1){
 					$perc = $this->cfg->get("fine_percentage");
 					$fine = ($money*$perc)/100;
 					if(EconomyAPI::getInstance()->myMoney($player->getName()) > $fine){
 					  	EconomyAPI::getInstance()->reduceMoney($player->getName(), $fine);
-						$player->sendMessage("§6[BOUNTY]>§bYour §3$fine".."$ §bwas taken as Bounty fine! Bounty Fine = §3$perc §bPercent of Bounty on you!");
+						$player->sendMessage("§6[BOUNTY]>§bYour §3$fine"."$ §bwas taken as Bounty fine! Bounty Fine = §3$perc §bPercent of Bounty on you!");
 					}
 					if(EconomyAPI::getInstance()->myMoney($player->getName()) <= $fine){
 					  	EconomyAPI::getInstance()->setMoney($player->getName(), 0);
-						$player->sendMessage("§6[BOUNTY]>§bYour §3$fine".."$ §bwas taken as Bounty fine! Bounty Fine = §3$perc §bPercent of Bounty on you!");
+						$player->sendMessage("§6[BOUNTY]>§bYour §3$fine"."$ §bwas taken as Bounty fine! Bounty Fine = §3$perc §bPercent of Bounty on you!");
 					}
 				}
 					$this->deleteBounty($lowr);
@@ -151,14 +151,14 @@ class Main extends PluginBase implements Listener{
 		 if(strtolower($cmd->getName()) == "bounty"){	
 		   if(!isset($args[0])){
 		        $sender->sendMessage("§cWrong command. §dPlease use: §5/bounty <set | me | search | top | about>");
-			    return true;
+			    return false;
 		   }	
 		 switch(strtolower($args[0])){
 		 case "set":
 		   if(!(isset($args[1])) or !(isset($args[2]))){
 			   $sender->sendMessage("§cWrong usage. §dPlease use: §5/bounty set <player> <money>");
 			   return true;
-			  
+			   break;
 		   }
 		   $invited = $args[1];
 		   $lower = strtolower($invited);
@@ -166,42 +166,42 @@ class Main extends PluginBase implements Listener{
 		   if($lower == $name){
 			   $sender->sendMessage("§6[BOUNTY]> §dYou cannot place bounties on yourself!");
 			   return true;
-			
+			   break;
 		   }
 		    $playerid = $this->getServer()->getPlayerExact($lower);
 			$money = $args[2];
 		   if(!$playerid instanceof Player) {
 			   $sender->sendMessage("§6[BOUNTY]> §dPlayer not found!");
 			   return true;
-			   
+			   break;
 		   }
 		   if(!is_numeric($args[2])) {
 			   $sender->sendMessage("§cWrong usage. §dPlease use: §5/bounty set $args[1] <money>\n§bBOUNTY> §6Money has to be a number!");
 			   return true;
-			   
+			   break;
 		   }
 		   $min = $this->cfg->get("min_bounty");
 		   if($money < $min){
-			  $sender->sendMessage("§6[BOUNTY]> §dMoney has to be more than $min".."$");
+			  $sender->sendMessage("§6[BOUNTY]> §dMoney has to be more than $min"."$");
 			  return true;
-			  
+			  break;
 		   }
-		   if($fail === EconomyAPI::getInstance()->reduceMoney($sender, $money)) {
+		   if($fail = EconomyAPI::getInstance()->reduceMoney($sender, $money)) {
 		   $player = $sender->getName();
 		   $this->addBounty($lower, $money);
-		   $sender->sendMessage("§bBOUNTY> §aSuccessfully added §6$money".."$ §abounty on §e$invited");
-		   $playerid->sendMessage("§bBOUNTY> §aA Bounty has been added on you for §2$money".."$ §aby §2$name\n§6Check total bounty on you by typing: §d/bounty me");
+		   $sender->sendMessage("§bBOUNTY> §aSuccessfully added §6$money"."$ §abounty on §e$invited");
+		   $playerid->sendMessage("§bBOUNTY> §aA Bounty has been added on you for §2$money"."$ §aby §2$name\n§6Check total bounty on you by typing: §d/bounty me");
 		   if($this->cfg->get("bounty_broadcast") == 1){
-			   $this->getServer()->broadcastMessage("§6[BOUNTY]> §r§3$player §bJust added §3$money".."$ §bbounty on §3$invited!");
+			   $this->getServer()->broadcastMessage("§6[BOUNTY]> §r§3$player §bJust added §3$money"."$ §bbounty on §3$invited!");
 		   }
 	           return true;
-		  
+		   break;
 		   }else {
 						switch($fail){
 							case EconomyAPI::RET_INVALID:
 								$sender->sendMessage("§6[BOUNTY]> §5You do not have enough money to set that bounty!");
-								return true;
-							
+								return false;
+								break;
 							case EconomyAPI::RET_CANCELLED:
 								$sender->sendMessage("§bBOUNTY> §6ERROR!");
 								break;
@@ -216,45 +216,45 @@ class Main extends PluginBase implements Listener{
 			   if(isset($args[1])){
 				   $sender->sendMessage("§dPlease use: §5/bounty me");
 				   return true;
-				   
+				   break;
 			   }
 			   if(!$this->bountyExists($lower)){
 				   $sender->sendMessage("§d=+=+=+=+=+=+= §bBounty §d=+=+=+=+=+=+=\n§aNo current bounties detected on you!\n§d=+=+=+=+=+=+= §bBounty §d=+=+=+=+=+=+=");
 				   return true;
-				   
+				   break;
 			   }
 			   if($this->bountyExists($lower)){
 				   $bounty = $this->getBountyMoney($lower);
-				   $sender->sendMessage("§d=+=+=+=+=+=+= §bBounty §d=+=+=+=+=+=+=\n§aBounty on you: §6$bounty".."$\n§d=+=+=+=+=+=+= §bBounty §d=+=+=+=+=+=+=");
+				   $sender->sendMessage("§d=+=+=+=+=+=+= §bBounty §d=+=+=+=+=+=+=\n§aBounty on you: §6$bounty"."$\n§d=+=+=+=+=+=+= §bBounty §d=+=+=+=+=+=+=");
 				   return true;
-				   
+				   break;
 			   }
 			   break;
-		   
+
 		   case "search":
 			   if(!isset($args[1])){
 				   $sender->sendMessage("§dPlease use: §5/bounty search <player>");
 				   return true;
-				   
+				   break;
 			   }
 			   $lower = strtolower($args[1]);
 			   if(!$this->bountyExists($lower)){
-				   $sender->sendMessage("§d=+=+=+=+=+=+= §bBounty §d=+=+=+=+=+=+=\n§aNo curent bounties on $args[1]"..".\n§d=+=+=+=+=+=+= §bBounty §d=+=+=+=+=+=+=");
+				   $sender->sendMessage("§d=+=+=+=+=+=+= §bBounty §d=+=+=+=+=+=+=\n§aNo curent bounties on $args[1]".".\n§d=+=+=+=+=+=+= §bBounty §d=+=+=+=+=+=+=");
 				   return true;
-				   
+				   break;
 			   }
 			   if($this->bountyExists($lower)){
 				   $bounty = $this->getBountyMoney($lower);
-				   $sender->sendMessage("§d=+=+=+=+=+=+= §bBounty §d=+=+=+=+=+=+=\n§aBounty on $args[1]: §6$bounty".."$\n§d=+=+=+=+=+=+= §bBounty §d=+=+=+=+=+=+=");
+				   $sender->sendMessage("§d=+=+=+=+=+=+= §bBounty §d=+=+=+=+=+=+=\n§aBounty on $args[1]: §6$bounty"."$\n§d=+=+=+=+=+=+= §bBounty §d=+=+=+=+=+=+=");
 				   return true;
-				  
+			    }
 			   }
 			       break;
 		   case "top":
 		       if(isset($args[1])){
 				   $sender->sendMessage("§dPlease use: §5/bounty top");
 				   return true;
-			           
+			           break;
 			   }
 			          $sender->sendMessage("§a--------- §bTop 10 MOST WANTED LIST §a---------");
 		              $result = $this->db->query("SELECT * FROM bounty ORDER BY money DESC LIMIT 10;"); 			
@@ -262,16 +262,19 @@ class Main extends PluginBase implements Listener{
 					  while($row = $result->fetchArray(SQLITE3_ASSOC)){
 						    $play = $row["player"];
 							$money = $row["money"];
-							$sender->sendMessage("§f§l$i. §r§a$play §f--> §6$money".."$");
+							$sender->sendMessage("§f§l$i. §r§a$play §f--> §6$money"."$");
 						    $i++; 
 			              }
-		        return true;  
+		        return true; 
+		 }
 		   case "about":
 		    $sender->sendMessage("§5Bounty v2.0.0-beta1 by §aKingbobs. n§eThis plugin was bought to you by §6Fallen§bMc§c Server! §aOur server IP: §c5.199.143.143 Port - 25579");
 		   return true; 
+		 }   
 		   default:
 		    $sender->sendMessage("§dPlease use: §5/bounty <set | me | search | top | about>");
 		    return true;
+		 }
 			 }
 	}
   }
