@@ -42,7 +42,7 @@ class Main extends PluginBase implements Listener{
     	public function bountyExists($playe) {
 		$result = $this->db->query("SELECT * FROM bounty WHERE player='$playe';");
 		$array = $result->fetchArray(SQLITE3_ASSOC);
-		return empty($array) == false;
+		return empty($array) == true;
 	    }
 		public function getBountyMoney($play){
         $result = $this->db->query("SELECT * FROM bounty WHERE player = '$play';");
@@ -151,7 +151,7 @@ class Main extends PluginBase implements Listener{
 		 if(strtolower($cmd->getName()) == "bounty"){	
 		   if(!isset($args[0])){
 		        $sender->sendMessage("§cWrong command. §dPlease use: §5/bounty <set | me | search | top | about>");
-			    return false;
+			    return true;
 		   }	
 		 switch(strtolower($args[0])){
 		 case "set":
@@ -200,7 +200,7 @@ class Main extends PluginBase implements Listener{
 						switch($fail){
 							case EconomyAPI::RET_INVALID:
 								$sender->sendMessage("§6[BOUNTY]> §5You do not have enough money to set that bounty!");
-								return false;
+								return true;
 								break;
 							case EconomyAPI::RET_CANCELLED:
 								$sender->sendMessage("§bBOUNTY> §6ERROR!");
