@@ -158,7 +158,7 @@ class Main extends PluginBase implements Listener{
 		   if(!(isset($args[1])) or !(isset($args[2]))){
 			   $sender->sendMessage("§cWrong usage. §dPlease use: §5/bounty set <player> <money>");
 			   return true;
-			   break;
+			  
 		   }
 		   $invited = $args[1];
 		   $lower = strtolower($invited);
@@ -166,27 +166,27 @@ class Main extends PluginBase implements Listener{
 		   if($lower == $name){
 			   $sender->sendMessage("§6[BOUNTY]> §dYou cannot place bounties on yourself!");
 			   return true;
-			   break;
+			
 		   }
 		    $playerid = $this->getServer()->getPlayerExact($lower);
 			$money = $args[2];
 		   if(!$playerid instanceof Player) {
 			   $sender->sendMessage("§6[BOUNTY]> §dPlayer not found!");
 			   return true;
-			   break;
+			   
 		   }
 		   if(!is_numeric($args[2])) {
 			   $sender->sendMessage("§cWrong usage. §dPlease use: §5/bounty set $args[1] <money>\n§bBOUNTY> §6Money has to be a number!");
 			   return true;
-			   break;
+			   
 		   }
 		   $min = $this->cfg->get("min_bounty");
 		   if($money < $min){
 			  $sender->sendMessage("§6[BOUNTY]> §dMoney has to be more than $min"."$");
 			  return true;
-			  break;
+			  
 		   }
-		   if($fail = EconomyAPI::getInstance()->reduceMoney($sender, $money)) {
+		   if($fail === EconomyAPI::getInstance()->reduceMoney($sender, $money)) {
 		   $player = $sender->getName();
 		   $this->addBounty($lower, $money);
 		   $sender->sendMessage("§bBOUNTY> §aSuccessfully added §6$money"."$ §abounty on §e$invited");
@@ -195,13 +195,13 @@ class Main extends PluginBase implements Listener{
 			   $this->getServer()->broadcastMessage("§6[BOUNTY]> §r§3$player §bJust added §3$money"."$ §bbounty on §3$invited!");
 		   }
 	           return true;
-		   break;
+		  
 		   }else {
 						switch($fail){
 							case EconomyAPI::RET_INVALID:
 								$sender->sendMessage("§6[BOUNTY]> §5You do not have enough money to set that bounty!");
 								return true;
-								break;
+							
 							case EconomyAPI::RET_CANCELLED:
 								$sender->sendMessage("§bBOUNTY> §6ERROR!");
 								break;
@@ -216,12 +216,12 @@ class Main extends PluginBase implements Listener{
 			   if(isset($args[1])){
 				   $sender->sendMessage("§dPlease use: §5/bounty me");
 				   return true;
-				   break;
+				   
 			   }
 			   if(!$this->bountyExists($lower)){
 				   $sender->sendMessage("§d=+=+=+=+=+=+= §bBounty §d=+=+=+=+=+=+=\n§aNo current bounties detected on you!\n§d=+=+=+=+=+=+= §bBounty §d=+=+=+=+=+=+=");
 				   return true;
-				   break;
+				   
 			   }
 			   if($this->bountyExists($lower)){
 				   $bounty = $this->getBountyMoney($lower);
