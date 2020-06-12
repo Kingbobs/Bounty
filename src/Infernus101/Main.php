@@ -265,16 +265,13 @@ class Main extends PluginBase implements Listener{
 							$sender->sendMessage("§f§l$i. §r§a$play §f--> §6$money".."$");
 						    $i++; 
 			              }
-		        return true; 
-		    
+		        return true;  
 		   case "about":
 		    $sender->sendMessage("§5Bounty v2.0.0-beta1 by §aKingbobs. n§eThis plugin was bought to you by §6Fallen§bMc§c Server! §aOur server IP: §c5.199.143.143 Port - 25579");
 		   return true; 
-		     
 		   default:
 		    $sender->sendMessage("§dPlease use: §5/bounty <set | me | search | top | about>");
 		    return true;
-		    
 			 }
 	}
   }
