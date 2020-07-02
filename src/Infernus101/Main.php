@@ -104,7 +104,7 @@ class Main extends PluginBase implements Listener{
 		$lower = strtolower($username);
 		$bounty = $this->getBountyMoney2($lower);
 		if($this->cfg->get("bounty_stats") == 1 && $this->cfg->get("health_stats") != 1){
-		$player->setNameTag("§a$username\n§eBounty: §6$bounty"."$");
+		$player->setNameTag("§a$username\n§eBounty: §6$bounty".."$");
 		}
 		if($this->cfg->get("health_stats") == 1 && $this->cfg->get("bounty_stats") != 1){
 		$player->setNameTag("§a$username §c".$player->getHealth()."§f/§c".$player->getMaxHealth());
