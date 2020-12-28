@@ -294,7 +294,7 @@ class Main extends PluginBase implements Listener{
 		        return true; 
 		    break;
 		   case "about":
-		    $sender->sendMessage("")
+		    $sender->sendMessage("§l§4Sub§lscribe §aTo maker baker on Youtubd")
 		    $sender->sendMessage("§5Bounty v2.0.0-beta1 by §aKingbobs. n§eThis plugin was bought to you by §6Fallen§bMc§c Server! §aOur server IP:Coming Soon");
 		   return true; 
 		   break;   
