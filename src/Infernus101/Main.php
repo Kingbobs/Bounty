@@ -150,17 +150,13 @@ class Main extends PluginBase implements Listener{
 		////////////////////// BOUNTY //////////////////////
 		 if(strtolower($cmd->getName()) == "bounty"){	
 		   if(!isset($args[0])){
-			//$sender->sendMessage("§4==========================================================================");
 		        $sender->sendMessage("§cWrong command. §dPlease use: §5/bounty <set | me | search | top | about>");
-			//$sender->sendMessage("§4==========================================================================");
 			    return false;
 		   }	
 		 switch(strtolower($args[0])){
 		 case "set":
 		   if(!(isset($args[1])) or !(isset($args[2]))){
-			   //$sender->sendMessage("§4========================================================= ");
 			   $sender->sendMessage("§cWrong usage. §dPlease use: §5/bounty set <player> <money>");
-			   //$sender->sendMessage("§4==========================================================");
 			   return true;
 			   break;
 		   }
@@ -168,25 +164,19 @@ class Main extends PluginBase implements Listener{
 		   $lower = strtolower($invited);
 		   $name = strtolower($sender->getName());
 		   if($lower == $name){
-			  // $sender->sendMessage("§4==================================================");
 			   $sender->sendMessage("§6[BOUNTY]> §dYou cannot place bounties on yourself!");
-			 //  $sender->sendMessage("§4==================================================");
 			   return true;
 			   break;
 		   }
 		    $playerid = $this->getServer()->getPlayerExact($lower);
 			$money = $args[2];
 		   if(!$playerid instanceof Player) {
-			   //$sender->sendMessage("§4=============================");
 			   $sender->sendMessage("§6[BOUNTY]> §dPlayer not found!");
-			  // $sender->sendMessage("§4=============================");
 			   return true;
 			   break;
 		   }
 		   if(!is_numeric($args[2])) {
-			  // $sender->sendMessage("§4================================================================================================");
 			   $sender->sendMessage("§cWrong usage. §dPlease use: §5/bounty set $args[1] <money>\n§bBOUNTY> §6Money has to be a number!");
-			 //  $sender->sendMessage("§4=================================================================================== =============");
 			   return true;
 			   break;
 		   }
@@ -209,20 +199,14 @@ class Main extends PluginBase implements Listener{
 		   }else {
 						switch($fail){
 							case EconomyAPI::RET_INVALID:
-							//	$sender->sendMessage("§4==========================================================");
 								$sender->sendMessage("§6[BOUNTY]> §5You do not have enough money to set that bounty!");
-							//	$sender->sendMessage("§4==========================================================");
 								return false;
 								break;
 							case EconomyAPI::RET_CANCELLED:
-							//	$sender->sendMessage("§4==========================================================");
 								$sender->sendMessage("§bBOUNTY> §6ERROR!");
-							//	$sender->sendMessage("§4==========================================================");
 								break;
 							case EconomyAPI::RET_NO_ACCOUNT:
-							//	$sender->sendMessage("§4==========================================================");
 								$sender->sendMessage("§bBOUNTY> §6ERROR!");
-							//	$sender->sendMessage("§4==========================================================");
 								break;
 						}
 					}
@@ -235,17 +219,13 @@ class Main extends PluginBase implements Listener{
 				   break;
 			   }
 			   if(!$this->bountyExists($lower)){
-				  // $sender->sendMessage("§4==========================================================");
 				   $sender->sendMessage("§d=+=+=+=+=+=+= §bBounty §d=+=+=+=+=+=+=\n§aNo current bounties detected on you!\n§d=+=+=+=+=+=+= §bBounty §d=+=+=+=+=+=+=");
-				  // $sender->sendMessage("§4==========================================================");
 				   return true;
 				   break;
 			   }
 			   if($this->bountyExists($lower)){
 				   $bounty = $this->getBountyMoney($lower);
-				  // $sender->sendMessage("§4==========================================================");
 				   $sender->sendMessage("§d=+=+=+=+=+=+= §bBounty §d=+=+=+=+=+=+=\n§aBounty on you: §6$bounty"."$\n§d=+=+=+=+=+=+= §bBounty §d=+=+=+=+=+=+=");
-				//   $sender->sendMessage("§4==========================================================");
 				   return true;
 				   break;
 			   }
@@ -253,25 +233,19 @@ class Main extends PluginBase implements Listener{
 
 		   case "search":
 			   if(!isset($args[1])){
-				  // $sender->sendMessage("§4==========================================================");
 				   $sender->sendMessage("§dPlease use: §5/bounty search <player>");
-				  // $sender->sendMessage("§4==========================================================");
 				   return true;
 				   break;
 			   }
 			   $lower = strtolower($args[1]);
 			   if(!$this->bountyExists($lower)){
-				 //  $sender->sendMessage("§4==========================================================");
 				   $sender->sendMessage("§d=+=+=+=+=+=+= §bBounty §d=+=+=+=+=+=+=\n§aNo curent bounties on $args[1]".".\n§d=+=+=+=+=+=+= §bBounty §d=+=+=+=+=+=+=");
-				  // $sender->sendMessage("§4==========================================================");
 				   return true;
 				   break;
 			   }
 			   if($this->bountyExists($lower)){
 				   $bounty = $this->getBountyMoney($lower);
-				  // $sender->sendMessage("§4==========================================================");
 				   $sender->sendMessage("§d=+=+=+=+=+=+= §bBounty §d=+=+=+=+=+=+=\n§aBounty on $args[1]: §6$bounty"."$\n§d=+=+=+=+=+=+= §bBounty §d=+=+=+=+=+=+=");
-				  // $sender->sendMessage("§4==========================================================");
 				   return true;
 				   break;
 			   }
@@ -294,14 +268,11 @@ class Main extends PluginBase implements Listener{
 		        return true; 
 		    break;
 		   case "about":
-		    $sender->sendMessage("§l§4Sub§lscribe §aTo maker baker on Youtubd")
-		    $sender->sendMessage("§5Bounty v2.0.0-beta1 by §aKingbobs. n§eThis plugin was bought to you by §6Fallen§bMc§c Server! §aOur server IP:Coming Soon");
+		    $sender->sendMessage("§5Bounty v2.0.0-beta1 by §aKingbobs. n§eThis plugin was bought to you by §6Fallen§bMc§c Server! §aOur server IP: §c5.199.143.143 Port - 25579");
 		   return true; 
 		   break;   
 		   default:
-		    //$sender->sendMessage("§4==========================================================");
 		    $sender->sendMessage("§dPlease use: §5/bounty <set | me | search | top | about>");
-		    //$sender->sendMessage("§4==========================================================");
 		    return true;
 		    break;
 			 }
