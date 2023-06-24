@@ -1,5 +1,5 @@
 <?php
-
+declare(strict_types=1);
 /*
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU Lesser General Public License as published by
@@ -9,152 +9,118 @@
 
 namespace Infernus101;
 
-use pocketmine\event\Listener;
+use pocketmine\command\Command;
+use pocketmine\command\CommandSender;
 use pocketmine\event\player\PlayerDeathEvent;
-use pocketmine\event\entity\EntityDamageEvent;
-use pocketmine\event\player\PlayerJoinEvent;
-use pocketmine\event\entity\EntityRegainHealthEvent;
-use pocketmine\event\entity\EntityDamageByEntityEvent;
-use pocketmine\plugin\PluginBase;
 use pocketmine\Player;
-use pocketmine\Server;
-use pocketmine\command\{Command, CommandSender};
-use pocketmine\utils\Config;
+use pocketmine\plugin\PluginBase;
 use pocketmine\utils\TextFormat;
+use pocketmine\utils\Config;
+use pocketmine\event\Listener;
 use onebone\economyapi\EconomyAPI;
 
-class Main extends PluginBase implements Listener{
-    public $db;
+class BountyPlugin extends PluginBase implements Listener
+{
+    /** @var \SQLite3 */
+    private $db;
 
-    public function onEnable(){
-        $this->getLogger()->info("§b§lLoaded Bounty by Zeao succesfully.");
-        $files = ["config.yml"];
-        foreach($files as $file){
-            if(!file_exists($this->getDataFolder() . $file)) {
-                @mkdir($this->getDataFolder());
-                file_put_contents($this->getDataFolder() . $file, $this->getResource($file));
-            }
-        }
+    public function onEnable(): void
+    {
         $this->getServer()->getPluginManager()->registerEvents($this, $this);
-        $this->cfg = new Config($this->getDataFolder() . "config.yml", Config::YAML);
+
         $this->db = new \SQLite3($this->getDataFolder() . "bounty.db");
-        $this->db->exec("CREATE TABLE IF NOT EXISTS bounty (player TEXT PRIMARY KEY COLLATE NOCASE, money INT);");
+        $this->db->exec("CREATE TABLE IF NOT EXISTS bounty (player TEXT PRIMARY KEY, money INTEGER);");
+
+        $this->getLogger()->info("BountyPlugin has been enabled.");
     }
 
-    public function bountyExists($player){
-        $result = $this->db->query("SELECT * FROM bounty WHERE player='$player';");
-        $array = $result->fetchArray(SQLITE3_ASSOC);
-        return !empty($array);
+    public function onDisable(): void
+    {
+        $this->db->close();
+        $this->getLogger()->info("BountyPlugin has been disabled.");
     }
 
-    public function getBountyMoney($player){
+    private function bountyExists(string $player): bool
+    {
+        $result = $this->db->query("SELECT * FROM bounty WHERE player = '$player';");
+        return $result->fetchArray(SQLITE3_ASSOC) !== false;
+    }
+
+    private function getBountyMoney(string $player): int
+    {
         $result = $this->db->query("SELECT * FROM bounty WHERE player = '$player';");
         $resultArr = $result->fetchArray(SQLITE3_ASSOC);
-        return (int) $resultArr["money"];
+        return (int)$resultArr["money"];
     }
 
-    public function onEntityDamage(EntityDamageEvent $event){
-        $entity = $event->getEntity();
-        if($entity instanceof Player){
-            $player = $entity->getPlayer();
-            if($this->cfg->get("bounty_stats") == 1 || $this->cfg->get("health_stats") == 1){
-                $this->renderNametag($player);
-            }
-        }
-    }
-
-    public function onEntityRegainHealth(EntityRegainHealthEvent $event){
-        $entity = $event->getEntity();
-        if($entity instanceof Player){
-            $player = $entity->getPlayer();
-            if($this->cfg->get("bounty_stats") == 1 || $this->cfg->get("health_stats") == 1){
-                $this->renderNametag($player);
-            }
-        }
-    }
-
-    public function onJoin(PlayerJoinEvent $event){
-        $player = $event->getPlayer();
-        if($this->cfg->get("bounty_stats") == 1 || $this->cfg->get("health_stats") == 1){
-            $this->renderNametag($player);
-        }
-    }
-
-    public function getBountyMoney2($player){
-        $result = $this->db->query("SELECT * FROM bounty WHERE player = '$player';");
-        $resultArr = $result->fetchArray(SQLITE3_ASSOC);
-        return (int) $resultArr["money"];
-    }
-
-    public function renderNametag($player){
-        if($this->bountyExists($player->getName())){
+    private function renderNametag(Player $player): void
+    {
+        if ($this->bountyExists($player->getName())) {
             $money = $this->getBountyMoney($player->getName());
             $player->setNameTag($player->getName() . "\n" . TextFormat::YELLOW . "Bounty: $" . $money);
-        }else{
+        } else {
             $player->setNameTag($player->getName());
         }
     }
 
-    public function onCommand(CommandSender $sender, Command $command, string $label, array $args): bool{
-        if(strtolower($command->getName()) === "bounty"){
-            if(!isset($args[0]) or !isset($args[1])){
+    public function onCommand(CommandSender $sender, Command $command, string $label, array $args): bool
+    {
+        if (strtolower($command->getName()) === "bounty") {
+            if (!isset($args[0]) || !isset($args[1])) {
                 $sender->sendMessage(TextFormat::RED . "Usage: /bounty <player> <amount>");
                 return true;
             }
             $player = $this->getServer()->getPlayer($args[0]);
-            if(!$player instanceof Player){
+            if (!$player instanceof Player) {
                 $sender->sendMessage(TextFormat::RED . "The specified player is not online.");
                 return true;
             }
-            if(!is_numeric($args[1]) or $args[1] <= 0){
+            if (!is_numeric($args[1]) || $args[1] <= 0) {
                 $sender->sendMessage(TextFormat::RED . "Please enter a valid bounty amount.");
                 return true;
             }
-            $amount = (int) $args[1];
+            $amount = (int)$args[1];
             $money = EconomyAPI::getInstance()->myMoney($sender);
-            if($money >= $amount){
-                $bountyMoney = $this->getBountyMoney2($player->getName());
-                if($bountyMoney >= $amount){
+            if ($money >= $amount) {
+                $bountyMoney = $this->getBountyMoney($player->getName());
+                if ($bountyMoney >= $amount) {
                     $sender->sendMessage(TextFormat::RED . "The specified player already has a higher bounty.");
                     return true;
                 }
                 EconomyAPI::getInstance()->reduceMoney($sender, $amount);
-                if($this->bountyExists($player->getName())){
+                if ($this->bountyExists($player->getName())) {
                     $stmt = $this->db->prepare("UPDATE bounty SET money = :money WHERE player = :player;");
-                    $stmt->bindValue(":money", $amount);
-                    $stmt->bindValue(":player", $player->getName());
+                    $stmt->bindValue(":player", $player->getName(), SQLITE3_TEXT);
+                    $stmt->bindValue(":money", $amount, SQLITE3_INTEGER);
                     $stmt->execute();
-                }else{
-                    $stmt = $this->db->prepare("INSERT OR REPLACE INTO bounty (player, money) VALUES (:player, :money);");
-                    $stmt->bindValue(":player", $player->getName());
-                    $stmt->bindValue(":money", $amount);
+                    $stmt->close();
+                } else {
+                    $stmt = $this->db->prepare("INSERT INTO bounty (player, money) VALUES (:player, :money);");
+                    $stmt->bindValue(":player", $player->getName(), SQLITE3_TEXT);
+                    $stmt->bindValue(":money", $amount, SQLITE3_INTEGER);
                     $stmt->execute();
+                    $stmt->close();
                 }
                 $this->renderNametag($player);
-                $sender->sendMessage(TextFormat::GREEN . "You have successfully set a $" . $amount . " bounty on " . $player->getName() . ".");
-            }else{
-                $sender->sendMessage(TextFormat::RED . "You don't have enough money to set this bounty.");
+                $sender->sendMessage(TextFormat::GREEN . "You have placed a bounty of $" . $amount . " on " . $player->getName() . ".");
+            } else {
+                $sender->sendMessage(TextFormat::RED . "You don't have enough money to place a bounty.");
             }
             return true;
         }
         return false;
     }
 
-    public function onPlayerDeath(PlayerDeathEvent $event){
+    public function onPlayerDeath(PlayerDeathEvent $event): void
+    {
         $player = $event->getPlayer();
-        if($this->bountyExists($player->getName())){
-            $money = $this->getBountyMoney($player->getName());
-            $killer = $player->getLastDamageCause()->getDamager();
-            if($killer instanceof Player){
-                EconomyAPI::getInstance()->addMoney($killer, $money);
-                $this->db->exec("DELETE FROM bounty WHERE player = '{$player->getName()}';");
-                $this->renderNametag($player);
-                $killer->sendMessage(TextFormat::GREEN . "You have claimed a $" . $money . " bounty on " . $player->getName() . ".");
-            }
+        $playerName = $player->getName();
+        if ($this->bountyExists($playerName)) {
+            $bountyMoney = $this->getBountyMoney($playerName);
+            EconomyAPI::getInstance()->addMoney($player->getLastDamageCause()->getDamager(), $bountyMoney);
+            $this->db->exec("DELETE FROM bounty WHERE player = '$playerName';");
+            $this->renderNametag($player);
+            $player->sendMessage(TextFormat::GREEN . "You have received a bounty of $" . $bountyMoney . ".");
         }
-    }
-
-    public function onDisable(){
-        $this->db->close();
     }
 }
